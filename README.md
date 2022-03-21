@@ -8,7 +8,14 @@
 
 2. Now you have the bot token, you can use it to deploy the bot.
 
-3. For the permissions& scope of the bot check this insted of what is show in above artile
+3. For the permissions& scope of the bot check this insted of what is show in above article
+    
+    Scopes
+    ![image](https://user-images.githubusercontent.com/64301340/159311861-265af1db-0bec-418f-b0eb-7605f945217f.png)
+    
+    Permissions
+    ![image](https://user-images.githubusercontent.com/64301340/159312215-960e614c-8821-4775-8ba9-123fc92a3b3a.png)
+
 
 ### Run Locally
 
