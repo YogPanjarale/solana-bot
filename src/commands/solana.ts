@@ -26,6 +26,7 @@ const showError = async (error: string, interaction: CommandInteraction) => {
 		await interaction.editReply({
 			embeds: [errorEmbed],
 		});
+        return;
 	} else {
 		await interaction.reply({ embeds: [errorEmbed] });
 	}
