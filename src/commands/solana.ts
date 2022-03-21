@@ -16,7 +16,6 @@ import { CollectionResponse, TokensResponse } from "../types";
 import { Connection } from "@metaplex/js";
 import { Metadata } from "@metaplex-foundation/mpl-token-metadata";
 
-
 interface Data {
 	name: string;
 	description: string;
@@ -26,9 +25,8 @@ export class Solana {
 	static async getNFTbyWallet(wallet_address: string) {
 		try {
 			const connection = new Connection("mainnet-beta");
-			const ownerPublickey =
-				wallet_address;
-			
+			const ownerPublickey = wallet_address;
+
 			const nftsmetadata = await Metadata.findDataByOwner(
 				connection,
 				ownerPublickey
@@ -44,13 +42,15 @@ export class Solana {
 		}
 	}
 	static async datafromUri(uri: string): Promise<Data> {
-		const json: any = await (await fetch(uri,{
-            timeout:2000
-        })).json();
+		const json: any = await (
+			await fetch(uri, {
+				timeout: 2000,
+			})
+		).json();
 		const data: Data = {
 			name: json.name || "--",
 			description: json?.description || "--",
-			image: json?.image || "-",
+			image: json?.image || default_image,
 		};
 		return data;
 	}
@@ -99,12 +99,11 @@ type Error = {
 };
 const showError = async (error: string, interaction: CommandInteraction) => {
 	const errorEmbed = ErrorEmbed(error);
-	if (interaction.replied){
+	if (interaction.replied) {
 		await interaction.editReply({
 			embeds: [errorEmbed],
-		})
-	}
-	else {
+		});
+	} else {
 		await interaction.reply({ embeds: [errorEmbed] });
 	}
 };
@@ -119,6 +118,8 @@ const checkError = async (result: Error, interaction: CommandInteraction) => {
 		return true;
 	}
 };
+const default_image =
+	"https://cdn.discordapp.com/attachments/905834245312880661/955499376363601960/Image_1.png";
 @Discord()
 @SlashGroup({ name: "solana" })
 export abstract class Group {
@@ -156,47 +157,56 @@ export abstract class Group {
 	) {
 		// await interaction.reply("Working on it ...");
 		await interaction.deferReply();
-		const metadata = await Solana.getNFTbyWallet(address);
-		console.log(metadata);
-		const err = metadata as Error;
-		if (await checkError(err, interaction)) return;
-		const links = metadata as string[];
-		//start previous next end
-		const embedX = new PaginationResolver(async (page: number, pagination: any) => {
-			let data:Data
-            try {
-                data = await Solana.datafromUri(links[page]);
-            } catch (error) {
-                data = {
-                    name: "Error Loading",
-                    description: "please try  next one",
-                    image: "--",
-                }
-            }
-			console.log(data);
-			return new MessageEmbed()
-				.setTitle(`**NFT's for wallet : ${address}  **`)
-				.addField("Name", data.name)
-				.addField("Description", data.description)
-				.setImage(data.image)
-				.setFooter({ text: `NFT ${page + 1} of ${links.length}  ` });
-		}, links.length);
+		try {
+			const metadata = await Solana.getNFTbyWallet(address);
+			console.log(metadata);
+			const err = metadata as Error;
+			if (await checkError(err, interaction)) return;
+			const links = metadata as string[];
+			//start previous next end
+			const embedX = new PaginationResolver(
+				async (page: number, pagination: any) => {
+					let data: Data;
+					try {
+						data = await Solana.datafromUri(links[page]);
+					} catch (error) {
+						data = {
+							name: "Error Loading",
+							description: "please try  next one",
+							image: default_image,
+						};
+					}
+					console.log(data);
+					return new MessageEmbed()
+						.setTitle(`**NFT's for wallet : ${address}  **`)
+						.addField("Name", data.name)
+						.addField("Description", data.description)
+						.setImage(data.image)
+						.setFooter({
+							text: `NFT ${page + 1} of ${links.length}  `,
+						});
+				},
+				links.length
+			);
 
-		const pagination = new Pagination(interaction, embedX, {
-			// ephemeral: true,
-			onTimeout: () => {
-				interaction.editReply("TimedOut");
-			},
+			const pagination = new Pagination(interaction, embedX, {
+				// ephemeral: true,
+				onTimeout: () => {
+					interaction.editReply("TimedOut");
+				},
 
-			time: 5 * 60 * 1000,
-			type:
-				links.length > 20
-					? PaginationType.SelectMenu
-					: PaginationType.Button,
-			
-		});
+				time: 5 * 60 * 1000,
+				type:
+					links.length > 20
+						? PaginationType.SelectMenu
+						: PaginationType.Button,
+			});
 
-		await pagination.send();
+			await pagination.send();
+		} catch (error) {
+			console.log(error);
+			showError("Error Occured", interaction);
+		}
 	}
 
 	@Slash("get_collections", { description: "Get collections" })
@@ -222,9 +232,9 @@ export abstract class Group {
 					})
 					.setTitle("**Launchpad / Collection**")
 					.addField("Name", col.name)
-                    .addField("Symbol",col.symbol)
+					.addField("Symbol", col.symbol)
 					.addField("Description", col.description)
-					.addField("Price", col.price.toString() + "SOL")
+					.addField("Price", col.price.toString() + " SOL")
 					.addField("Total Supply", col.size.toString())
 					.addField("Launch Date", col.launchDatetime || "-")
 					.setImage(col.image);
@@ -235,7 +245,7 @@ export abstract class Group {
 						? PaginationType.SelectMenu
 						: PaginationType.Button,
 				showStartEnd: true,
-				time: 5* 60 * 1000,
+				time: 5 * 60 * 1000,
 			});
 			await pagination.send();
 		} catch (error) {
