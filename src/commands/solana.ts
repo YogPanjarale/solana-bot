@@ -1,7 +1,7 @@
 const default_image =
-    "https://cdn.discordapp.com/attachments/905834245312880661/955505864104628294/Image_2.png";
+	"https://cdn.discordapp.com/attachments/905834245312880661/955505864104628294/Image_2.png";
 import {
-    Pagination,
+	Pagination,
 	PaginationResolver,
 	PaginationType,
 } from "@discordx/pagination";
@@ -101,12 +101,12 @@ type Error = {
 };
 const showError = async (error: string, interaction: CommandInteraction) => {
 	const errorEmbed = ErrorEmbed(error);
-	if (interaction.replied) {
+	if (interaction.replied || interaction.deferred) {
 		await interaction.editReply({
 			embeds: [errorEmbed],
 		});
 	} else {
-		await interaction.editReply({ embeds: [errorEmbed] });
+		await interaction.reply({ embeds: [errorEmbed] });
 	}
 };
 const checkError = async (result: Error, interaction: CommandInteraction) => {
@@ -130,25 +130,24 @@ export abstract class Group {
 		address: string,
 		interaction: CommandInteraction
 	): Promise<void> {
-        try {
-            
-            const result = await Api.getTokens(address);
-            
-            if (await checkError(result as Error, interaction)) return;
-            
-            const { name, collection, image, externalUrl, owner } = result;
-            const embed = new MessageEmbed({
-                title: name,
-                image: { url: image },
-                // description: "0",
-            });
-            embed.setURL(externalUrl);
-            embed.addField("Collection", collection);
-            embed.addField("Owner", owner);
-            await interaction.reply({ embeds: [embed] });
-        } catch (error) {
-            await showError("Something went wrong", interaction);
-        }
+		try {
+			const result = await Api.getTokens(address);
+
+			if (await checkError(result as Error, interaction)) return;
+
+			const { name, collection, image, externalUrl, owner } = result;
+			const embed = new MessageEmbed({
+				title: name,
+				image: { url: image },
+				// description: "0",
+			});
+			embed.setURL(externalUrl);
+			embed.addField("Collection", collection);
+			embed.addField("Owner", owner);
+			await interaction.reply({ embeds: [embed] });
+		} catch (error) {
+			await showError("Something went wrong", interaction);
+		}
 	}
 
 	@Slash("wallet", { description: "get tokens by wallet address" })
@@ -238,7 +237,7 @@ export abstract class Group {
 					.setTitle("**Launchpad / Collection**")
 					.addField("Name", col.name)
 					.addField("Symbol", col.symbol)
-					.addField("Description", col.description.substring(0,1000))
+					.addField("Description", col.description.substring(0, 1000))
 					.addField("Price", col.price.toString() + " SOL")
 					.addField("Total Supply", col.size.toString())
 					.addField("Launch Date", col.launchDatetime || "-")
