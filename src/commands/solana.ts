@@ -1,104 +1,25 @@
-const default_image =
-	"https://cdn.discordapp.com/attachments/905834245312880661/955505864104628294/Image_2.png";
 import {
 	Pagination,
 	PaginationResolver,
 	PaginationType,
 } from "@discordx/pagination";
 import {
-	Collection,
 	CommandInteraction,
-	MessageButton,
 	MessageEmbed,
 } from "discord.js";
 import { Discord, Slash, SlashGroup, SlashOption } from "discordx";
-import fetch from "node-fetch";
-import { CollectionResponse, TokensResponse } from "../types";
+import { CollectionResponse,Data,Error } from "../types";
 
-import { Connection } from "@metaplex/js";
-import { Metadata } from "@metaplex-foundation/mpl-token-metadata";
+import { MagicDen } from "../services/MagicDen.js";
+import { Metaplex } from "../services/Metaplex.js";
+import { default_image } from "../config.js";
 
-interface Data {
-	name: string;
-	description: string;
-	image: string;
-}
-export class Solana {
-	static async getNFTbyWallet(wallet_address: string) {
-		try {
-			const connection = new Connection("mainnet-beta");
-			const ownerPublickey = wallet_address;
-
-			const nftsmetadata = await Metadata.findDataByOwner(
-				connection,
-				ownerPublickey
-			);
-			return nftsmetadata.map((v) => {
-				return v.data.uri;
-			});
-		} catch (error) {
-			return {
-				status: 500,
-				message: "Error Occured",
-			};
-		}
-	}
-	static async datafromUri(uri: string): Promise<Data> {
-		const json: any = await (
-			await fetch(uri, {
-				timeout: 2000,
-			})
-		).json();
-		const data: Data = {
-			name: json.name || "--",
-			description: json?.description || "--",
-			image: json?.image || default_image,
-		};
-		return data;
-	}
-}
-
-export class MagicDen {
-	/**
-	 * Get token metadata by mint address
-	 * @param token_mint
-	 */
-	async getTokens(token_mint: string): Promise<TokensResponse> {
-		const url = `https://api-mainnet.magiceden.dev/v2/tokens/${token_mint}`;
-		const response = await fetch(url, { redirect: "follow" });
-		const json = await response.json();
-		return json as TokensResponse;
-	}
-	async getTokenbyWallet(wallet_address: string): Promise<TokensResponse[]> {
-		const url = `https://api-mainnet.magiceden.dev/v2/wallets/${wallet_address}/tokens?offset=0&limit=100&listedOnly=true`;
-		const response = await fetch(url, { redirect: "follow" });
-		const json = await response.json();
-		return json as TokensResponse[];
-	}
-
-	async getCollections(limit: number = 10): Promise<CollectionResponse[]> {
-		const url = `https://api-mainnet.magiceden.dev/v2/launchpad/collections?offset=0&limit=${limit}`;
-		const response = await fetch(url, { redirect: "follow" });
-		const json = await response.json();
-		return json as CollectionResponse[];
-	}
-}
 
 const Api = new MagicDen();
 
 const ErrorEmbed = (err: string) =>
 	new MessageEmbed({ title: "Error", description: err, color: "#DE1738" });
-type ErrorObj = {
-	value: string;
-	msg: string;
-	param: string;
-	location: string;
-};
-type Error = {
-	errors?: ErrorObj[];
-	status?: number;
-	message?: string;
-};
+
 const showError = async (error: string, interaction: CommandInteraction) => {
 	const errorEmbed = ErrorEmbed(error);
 	if (interaction.replied || interaction.deferred) {
@@ -162,7 +83,7 @@ export abstract class Group {
 		// await interaction.reply("Working on it ...");
 		await interaction.deferReply();
 		try {
-			const metadata = await Solana.getNFTbyWallet(address);
+			const metadata = await Metaplex.getNFTbyWallet(address);
 			console.log(metadata);
 			const err = metadata as Error;
 			if (await checkError(err, interaction)) return;
@@ -172,7 +93,7 @@ export abstract class Group {
 				async (page: number, pagination: any) => {
 					let data: Data;
 					try {
-						data = await Solana.datafromUri(links[page]);
+						data = await Metaplex.datafromUri(links[page]);
 					} catch (error) {
 						data = {
 							name: "Error Loading",
