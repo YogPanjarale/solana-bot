@@ -6,10 +6,10 @@ interface Data {
 	image: string;
 }
 type ErrorObj = {
-	value: string;
+	value?: string;
 	msg: string;
-	param: string;
-	location: string;
+	param?: string;
+	location?: string;
 };
 type Error = {
 	errors?: ErrorObj[];

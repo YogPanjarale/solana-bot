@@ -3,19 +3,20 @@ import {
 	PaginationResolver,
 	PaginationType,
 } from "@discordx/pagination";
-import {
-	CommandInteraction,
-	MessageEmbed,
-} from "discord.js";
+import { CommandInteraction, MessageEmbed } from "discord.js";
 import { Discord, Slash, SlashGroup, SlashOption } from "discordx";
-import { CollectionResponse,Data,Error } from "../types";
+import { CollectionResponse, Data, Error } from "../types";
 
 import { MagicDen } from "../services/MagicDen.js";
-import { Metaplex } from "../services/Metaplex.js";
 import { default_image } from "../config.js";
-
+import { TheBlockChainApi } from "../services/theblockchainapi.js";
+import { OffChainData } from "../types/Root";
 
 const Api = new MagicDen();
+const BApi = new TheBlockChainApi(
+	process.env.API_KEY_ID || "",
+	process.env.API_KEY_SECRET || ""
+);
 
 const ErrorEmbed = (err: string) =>
 	new MessageEmbed({ title: "Error", description: err, color: "#DE1738" });
@@ -26,7 +27,7 @@ const showError = async (error: string, interaction: CommandInteraction) => {
 		await interaction.editReply({
 			embeds: [errorEmbed],
 		});
-        return;
+		return;
 	} else {
 		await interaction.reply({ embeds: [errorEmbed] });
 	}
@@ -84,18 +85,25 @@ export abstract class Group {
 		// await interaction.reply("Working on it ...");
 		await interaction.deferReply();
 		try {
-			const metadata = await Metaplex.getNFTbyWallet(address);
-			console.log(metadata);
-			const err = metadata as Error;
+			// const metadata = await Metaplex.getNFTbyWallet(address);
+			const response = await BApi.solanaGetNFTsBelongingToWallet({
+				wallet: address,
+				network: "mainnet-beta",
+			});
+			 console.log(response);
+			const err = response as Error;
+			const bdata = response as OffChainData[];
 			if (await checkError(err, interaction)) return;
-			const links = metadata as string[];
+			// const links = metadata as string[];
 			//start previous next end
 			const embedX = new PaginationResolver(
 				async (page: number, pagination: any) => {
-					let data: Data;
+					let data: OffChainData;
 					try {
-						data = await Metaplex.datafromUri(links[page]);
+						// data = await Metaplex.datafromUri(links[page]);
+						data = bdata[page]
 					} catch (error) {
+						console.log(error);
 						data = {
 							name: "Error Loading",
 							description: "please try  next one",
@@ -105,14 +113,14 @@ export abstract class Group {
 					console.log(data);
 					return new MessageEmbed()
 						.setTitle(`**NFT's for wallet : ${address}  **`)
-						.addField("Name", data.name)
-						.addField("Description", data.description)
-						.setImage(data.image)
+						.addField("Name", data.name||"N/A")
+						.addField("Description", data.description||"N/A")
+						.setImage(data.image||default_image)
 						.setFooter({
-							text: `NFT ${page + 1} of ${links.length}  `,
+							text: `NFT ${page + 1} of ${bdata.length}  `,
 						});
 				},
-				links.length
+				bdata.length
 			);
 
 			const pagination = new Pagination(interaction, embedX, {
@@ -123,7 +131,7 @@ export abstract class Group {
 
 				time: 5 * 60 * 1000,
 				type:
-					links.length > 20
+					bdata.length > 20
 						? PaginationType.SelectMenu
 						: PaginationType.Button,
 			});
@@ -140,21 +148,29 @@ export abstract class Group {
 	async collections(
 		@SlashOption("limit", { description: "Limit", required: false })
 		limit: number,
+		@SlashOption("offset", { description: "offset", required: false })
+		offset: number,
 		interaction: CommandInteraction
 	): Promise<void> {
-		const result = await Api.getCollections(limit);
+		await interaction.deferReply();
+		const result = await Api.getCollections(offset, limit);
 		if (result.length == 0) {
 			const errorEmbed = ErrorEmbed("No collections found");
-			await interaction.reply({ embeds: [errorEmbed] });
+			await interaction.editReply({ embeds: [errorEmbed] });
 			return;
 		}
-		// if (checkError(result as Error, interaction)) return;
+		if (await checkError(result as Error, interaction)) return;
 		const cols = result as CollectionResponse[];
+		console.log(cols);
 		try {
 			const pages = cols.map((col, i) => {
 				return new MessageEmbed()
 					.setFooter({
-						text: `Collection ${i + 1} of ${cols.length}`,
+						text: `Collection ${i + 1} of ${
+							offset == 0
+								? cols.length
+								: `${offset - 1}-${cols.length}`
+						}`,
 					})
 					.setTitle("**Launchpad / Collection**")
 					.addField("Name", col.name)
