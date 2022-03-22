@@ -64,7 +64,7 @@ export abstract class Group {
 				title: name,
 				image: { url: image },
 				// description: "0",
-			}).setColor(sidebarColor);
+			}).setColor(mintColor);
 			embed.setURL(externalUrl);
 			embed.addField("Collection", collection);
 			embed.addField("Owner", owner);
@@ -120,7 +120,7 @@ export abstract class Group {
 						.setFooter({
 							text: `NFT ${page + 1} of ${bdata.length}  `,
 						})
-						.setColor(mintColor);
+						.setColor(sidebarColor);
 				},
 				bdata.length
 			);
