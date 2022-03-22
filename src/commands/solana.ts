@@ -8,7 +8,7 @@ import { Discord, Slash, SlashGroup, SlashOption } from "discordx";
 import { CollectionResponse, Data, Error } from "../types";
 
 import { MagicDen } from "../services/MagicDen.js";
-import { default_image } from "../config.js";
+import { default_image,mintColor,sidebarColor } from "../config.js";
 import { TheBlockChainApi } from "../services/theblockchainapi.js";
 import { OffChainData } from "../types/Root";
 
@@ -16,7 +16,8 @@ const Api = new MagicDen();
 const BApi = new TheBlockChainApi(
 	process.env.API_KEY_ID || "",
 	process.env.API_KEY_SECRET || ""
-);
+	);
+
 
 const ErrorEmbed = (err: string) =>
 	new MessageEmbed({ title: "Error", description: err, color: "#DE1738" });
@@ -63,7 +64,7 @@ export abstract class Group {
 				title: name,
 				image: { url: image },
 				// description: "0",
-			});
+			}).setColor(sidebarColor);
 			embed.setURL(externalUrl);
 			embed.addField("Collection", collection);
 			embed.addField("Owner", owner);
@@ -90,7 +91,7 @@ export abstract class Group {
 				wallet: address,
 				network: "mainnet-beta",
 			});
-			 console.log(response);
+			console.log(response);
 			const err = response as Error;
 			const bdata = response as OffChainData[];
 			if (await checkError(err, interaction)) return;
@@ -101,7 +102,7 @@ export abstract class Group {
 					let data: OffChainData;
 					try {
 						// data = await Metaplex.datafromUri(links[page]);
-						data = bdata[page]
+						data = bdata[page];
 					} catch (error) {
 						console.log(error);
 						data = {
@@ -113,12 +114,13 @@ export abstract class Group {
 					console.log(data);
 					return new MessageEmbed()
 						.setTitle(`**NFT's for wallet : ${address}  **`)
-						.addField("Name", data.name||"N/A")
-						.addField("Description", data.description||"N/A")
-						.setImage(data.image||default_image)
+						.addField("Name", data.name || "N/A")
+						.addField("Description", data.description || "N/A")
+						.setImage(data.image || default_image)
 						.setFooter({
 							text: `NFT ${page + 1} of ${bdata.length}  `,
-						});
+						})
+						.setColor(mintColor);
 				},
 				bdata.length
 			);
@@ -146,12 +148,20 @@ export abstract class Group {
 	@Slash("get_collections", { description: "Get collections" })
 	@SlashGroup("solana")
 	async collections(
-		@SlashOption("limit", { description: "Limit", required: false })
+		@SlashOption("limit", { description: "Limit", required: false,minValue: 0,
+		maxValue:500 })
 		limit: number,
-		@SlashOption("offset", { description: "offset", required: false })
-		offset: number,
+		@SlashOption("offset", {
+			description: "offset",
+			required: false,
+			minValue: 0,
+			maxValue:500
+		})
+		offset: number ,
 		interaction: CommandInteraction
 	): Promise<void> {
+		offset = offset || 0;
+		limit = limit || 20;
 		await interaction.deferReply();
 		const result = await Api.getCollections(offset, limit);
 		if (result.length == 0) {
@@ -169,7 +179,7 @@ export abstract class Group {
 						text: `Collection ${i + 1} of ${
 							offset == 0
 								? cols.length
-								: `${offset - 1}-${cols.length}`
+								: `${offset - 1}-${offset + cols.length}`
 						}`,
 					})
 					.setTitle("**Launchpad / Collection**")
@@ -179,7 +189,8 @@ export abstract class Group {
 					.addField("Price", col.price.toString() + " SOL")
 					.addField("Total Supply", col.size.toString())
 					.addField("Launch Date", col.launchDatetime || "-")
-					.setImage(col.image);
+					.setImage(col.image)
+					.setColor(sidebarColor);
 			});
 			const pagination = new Pagination(interaction, pages, {
 				type:
