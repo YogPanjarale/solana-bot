@@ -4,21 +4,31 @@ import {
 	PaginationType,
 } from "@discordx/pagination";
 import { CommandInteraction, MessageEmbed } from "discord.js";
-import { Discord, Slash, SlashGroup, SlashOption } from "discordx";
-import { CollectionResponse, Data, Error } from "../types";
+import { Discord, Slash, SlashChoice, SlashGroup, SlashOption } from "discordx";
+import { CollectionResponse, ConversionResponse, Data, Error } from "../types";
 
 import { MagicDen } from "../services/MagicDen.js";
-import { default_image,mintColor,sidebarColor,name } from "../config.js";
+import { default_image, mintColor, sidebarColor, name } from "../config.js";
 import { TheBlockChainApi } from "../services/theblockchainapi.js";
 import { OffChainData } from "../types/Root";
-import { formatAddress } from "../utils/format_address.js"
+import { formatAddress } from "../utils/format_address.js";
+import { Currency } from "@metaplex/js";
+import { convert } from "../services/Currencies.js";
+
+const CurrencyChoices = {
+	"USD (US Dollar)":"usd",
+	"EUR (euro)":"eur",
+	"JPY (Japanese Yen)":"jpy",
+	"INR (India Rupee)" :"inr",
+	 "KRW (South Korean Won)":"krw",
+	 "RUB (Russian Ruble)":"rub",
+}
 
 const Api = new MagicDen();
 const BApi = new TheBlockChainApi(
 	process.env.API_KEY_ID || "",
 	process.env.API_KEY_SECRET || ""
-	);
-
+);
 
 const ErrorEmbed = (err: string) =>
 	new MessageEmbed({ title: "Error", description: err, color: "#DE1738" });
@@ -73,7 +83,9 @@ export abstract class Group {
 		}
 	}
 
-	@Slash("token_listings", { description: "get token listing on Marketplaces by Mint address" })
+	@Slash("token_listings", {
+		description: "get token listing on Marketplaces by Mint address",
+	})
 	async tokenlisting(
 		@SlashOption("address", { description: "Token's Mint address" })
 		address: string,
@@ -84,7 +96,10 @@ export abstract class Group {
 
 			if (await checkError(result as Error, interaction)) return;
 			if (result.length == 0) {
-				await showError("No Listing available for this token", interaction);
+				await showError(
+					"No Listing available for this token",
+					interaction
+				);
 				return;
 			}
 			const { seller, price } = result[0];
@@ -138,7 +153,9 @@ export abstract class Group {
 					}
 					console.log(data);
 					return new MessageEmbed()
-						.setTitle(`NFT's for wallet : ${formatAddress(address)}`)
+						.setTitle(
+							`NFT's for wallet : ${formatAddress(address)}`
+						)
 						.addField("Name", data.name || "N/A")
 						.addField("Description", data.description || "N/A")
 						.setImage(data.image || default_image)
@@ -170,18 +187,22 @@ export abstract class Group {
 		}
 	}
 
-	@Slash("get_collections", { description: "Get details of Magic Eden Launchpad Collections" })
+	@Slash("get_collections", {
+		description: "Get details of Magic Eden Launchpad Collections",
+	})
 	async collections(
-		@SlashOption("limit", { description: "Limit", required: false,
-		// minValue: 0, maxValue:500
-	 })
+		@SlashOption("limit", {
+			description: "Limit",
+			required: false,
+			// minValue: 0, maxValue:500
+		})
 		limit: number,
 		@SlashOption("offset", {
 			description: "offset",
 			required: false,
-		//	minValue: 0,	maxValue:500
+			//	minValue: 0,	maxValue:500
 		})
-		offset: number ,
+		offset: number,
 		interaction: CommandInteraction
 	): Promise<void> {
 		offset = offset || 0;
@@ -230,4 +251,51 @@ export abstract class Group {
 			showError("Error Occured", interaction);
 		}
 	}
+	@Slash("convert", { description: "convert currencies" })
+	async convert(
+		@SlashChoice("C to Solana","c2s")
+		@SlashChoice("Solana to C","s2c")
+		@SlashOption("method", { description: "method", required: true })
+		action: string,
+		@SlashOption("amount", { description: "amount", required: true })
+		amount: number,
+		@SlashChoice(CurrencyChoices)
+		@SlashOption("currency", { description: "currency", required: true })
+		currency: string,
+		interaction: CommandInteraction
+	): Promise<void> {
+		await interaction.deferReply();
+		let data: ConversionResponse;
+		let from:string,to:string;
+		if(action=="c2s"){
+			from=currency;
+			to="solana";
+		}else{
+			from="solana";
+			to=currency;
+		}
+		try {
+			const result = await convert(
+				amount,
+				from.toLowerCase(),
+				to.toLowerCase()
+			);
+			data = result;
+			const embed = new MessageEmbed()
+				.setTitle(`**${amount} ${from} to ${to}**`)
+				.addField(`${from}`, data.initalAmount.toString(), true)
+				.addField(`${to}`, data.convertedAmount.toString(), true)
+				.setFooter({
+					text: `1 SOL = ${
+						data.rate
+					} ${currency.toUpperCase().substring(0,3)}`,
+				})
+				.setColor(sidebarColor);
+			await interaction.editReply({ embeds: [embed] });
+		} catch (error) {
+			console.log(error);
+			showError(error + " ", interaction);
+		}
+	}
 }
+0

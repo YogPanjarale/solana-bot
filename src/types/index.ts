@@ -17,9 +17,17 @@ type Error = {
 	status?: number;
 	message?: string;
 };
+type ConversionResponse = {
+	from: string;
+	to:string;
+	convertedAmount: number;
+	initalAmount: number;
+	rate:number
+}
 export {
     CollectionResponse,
     TokensResponse,
+	ConversionResponse,
     Data,
     Error,
     ErrorObj,
