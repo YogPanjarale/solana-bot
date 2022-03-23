@@ -148,14 +148,14 @@ export abstract class Group {
 	@Slash("get_collections", { description: "Get collections" })
 	@SlashGroup("solana")
 	async collections(
-		@SlashOption("limit", { description: "Limit", required: false,minValue: 0,
-		maxValue:500 })
+		@SlashOption("limit", { description: "Limit", required: false,
+				       //minValue: 0,maxValue:500
+				      })
 		limit: number,
 		@SlashOption("offset", {
 			description: "offset",
 			required: false,
-			minValue: 0,
-			maxValue:500
+
 		})
 		offset: number ,
 		interaction: CommandInteraction
