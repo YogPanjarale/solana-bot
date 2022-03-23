@@ -8,7 +8,7 @@ import { Discord, Slash, SlashGroup, SlashOption } from "discordx";
 import { CollectionResponse, Data, Error } from "../types";
 
 import { MagicDen } from "../services/MagicDen.js";
-import { default_image,mintColor,sidebarColor } from "../config.js";
+import { default_image,mintColor,sidebarColor,name } from "../config.js";
 import { TheBlockChainApi } from "../services/theblockchainapi.js";
 import { OffChainData } from "../types/Root";
 
@@ -45,10 +45,10 @@ const checkError = async (result: Error, interaction: CommandInteraction) => {
 	}
 };
 @Discord()
-@SlashGroup({ name: "solana" })
+@SlashGroup({ name: name })
 export abstract class Group {
 	@Slash("tokens", { description: "get token metadata by Mint address" })
-	@SlashGroup("solana")
+	@SlashGroup(name)
 	async tokens(
 		@SlashOption("address", { description: "Token's Mint address" })
 		address: string,
@@ -75,7 +75,7 @@ export abstract class Group {
 	}
 
 	@Slash("token_listings", { description: "get token listing on Marketplaces by Mint address" })
-	@SlashGroup("solana")
+	@SlashGroup(name)
 	async tokenlisting(
 		@SlashOption("address", { description: "Token's Mint address" })
 		address: string,
@@ -103,7 +103,7 @@ export abstract class Group {
 	}
 
 	@Slash("wallet", { description: "get NFTs by Wallet address" })
-	@SlashGroup("solana")
+	@SlashGroup(name)
 	async wallet(
 		@SlashOption("address", {
 			description: "wallet address or public key of owner",
@@ -174,7 +174,7 @@ export abstract class Group {
 	}
 
 	@Slash("get_collections", { description: "Get details of Magic Eden Launchpad Collections" })
-	@SlashGroup("solana")
+	@SlashGroup(name)
 	async collections(
 		@SlashOption("limit", { description: "Limit", required: false,
 		// minValue: 0, maxValue:500
