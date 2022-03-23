@@ -19,6 +19,7 @@ export class TheBlockChainApi {
 
 		const url =
 			`https://api.blockchainapi.com/v1/solana/wallet/${network}/${wallet}/nfts`;
+			console.log(this)
 		const response = await fetch(url, {
             method: 'GET',
             headers: {APIKeyID: this.keyid, APISecretKey: this.keysecret}

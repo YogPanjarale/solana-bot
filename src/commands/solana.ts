@@ -11,6 +11,7 @@ import { MagicDen } from "../services/MagicDen.js";
 import { default_image,mintColor,sidebarColor,name } from "../config.js";
 import { TheBlockChainApi } from "../services/theblockchainapi.js";
 import { OffChainData } from "../types/Root";
+import { formatAddress } from "../utils/format_address.js"
 
 const Api = new MagicDen();
 const BApi = new TheBlockChainApi(
@@ -45,10 +46,8 @@ const checkError = async (result: Error, interaction: CommandInteraction) => {
 	}
 };
 @Discord()
-@SlashGroup({ name: name })
 export abstract class Group {
 	@Slash("tokens", { description: "get token metadata by Mint address" })
-	@SlashGroup(name)
 	async tokens(
 		@SlashOption("address", { description: "Token's Mint address" })
 		address: string,
@@ -75,7 +74,6 @@ export abstract class Group {
 	}
 
 	@Slash("token_listings", { description: "get token listing on Marketplaces by Mint address" })
-	@SlashGroup(name)
 	async tokenlisting(
 		@SlashOption("address", { description: "Token's Mint address" })
 		address: string,
@@ -91,7 +89,7 @@ export abstract class Group {
 			}
 			const { seller, price } = result[0];
 			const embed = new MessageEmbed({
-				title: `Listings for ${address}`,
+				title: `Listings for ${formatAddress(address)}`,
 			}).setColor(mintColor);
 			embed.addField("Seller", seller);
 			embed.addField("Price", price.toString() + " SOL");
@@ -103,7 +101,6 @@ export abstract class Group {
 	}
 
 	@Slash("wallet", { description: "get NFTs by Wallet address" })
-	@SlashGroup(name)
 	async wallet(
 		@SlashOption("address", {
 			description: "wallet address or public key of owner",
@@ -141,7 +138,7 @@ export abstract class Group {
 					}
 					console.log(data);
 					return new MessageEmbed()
-						.setTitle(`NFT's for wallet : ${address}`)
+						.setTitle(`NFT's for wallet : ${formatAddress(address)}`)
 						.addField("Name", data.name || "N/A")
 						.addField("Description", data.description || "N/A")
 						.setImage(data.image || default_image)
@@ -174,7 +171,6 @@ export abstract class Group {
 	}
 
 	@Slash("get_collections", { description: "Get details of Magic Eden Launchpad Collections" })
-	@SlashGroup(name)
 	async collections(
 		@SlashOption("limit", { description: "Limit", required: false,
 		// minValue: 0, maxValue:500
