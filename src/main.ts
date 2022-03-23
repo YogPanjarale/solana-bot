@@ -32,9 +32,9 @@ client.once("ready", async () => {
 
   // uncomment this line to clear all guild commands,
   // useful when moving to global commands from guild commands
-  //  await client.clearApplicationCommands(
-  //    ...client.guilds.cache.map((g) => g.id)
-  //  );
+   await client.clearApplicationCommands(
+     ...client.guilds.cache.map((g) => g.id)
+   );
 
   console.log("Bot started");
 });

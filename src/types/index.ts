@@ -1,5 +1,6 @@
 import { TokensResponse } from "./tokens";
 import { CollectionResponse } from "./collections";
+import {TokenListing} from "./token_listing"
 interface Data {
 	name: string;
 	description: string;
@@ -22,4 +23,5 @@ export {
     Data,
     Error,
     ErrorObj,
+	TokenListing
 }

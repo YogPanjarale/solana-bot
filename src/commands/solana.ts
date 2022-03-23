@@ -47,7 +47,7 @@ const checkError = async (result: Error, interaction: CommandInteraction) => {
 @Discord()
 @SlashGroup({ name: "solana" })
 export abstract class Group {
-	@Slash("tokens", { description: "Get token metadata by mint address" })
+	@Slash("tokens", { description: "get token metadata by Mint address" })
 	@SlashGroup("solana")
 	async tokens(
 		@SlashOption("address", { description: "Token's Mint address" })
@@ -74,7 +74,35 @@ export abstract class Group {
 		}
 	}
 
-	@Slash("wallet", { description: "get tokens by wallet address" })
+	@Slash("token_listings", { description: "get token listing on Marketplaces by Mint address" })
+	@SlashGroup("solana")
+	async tokenlisting(
+		@SlashOption("address", { description: "Token's Mint address" })
+		address: string,
+		interaction: CommandInteraction
+	): Promise<void> {
+		try {
+			const result = await Api.getTokenListing(address);
+
+			if (await checkError(result as Error, interaction)) return;
+			if (result.length == 0) {
+				await showError("No Listing available for this token", interaction);
+				return;
+			}
+			const { seller, price } = result[0];
+			const embed = new MessageEmbed({
+				title: `Listings for ${address}`,
+			}).setColor(mintColor);
+			embed.addField("Seller", seller);
+			embed.addField("Price", price.toString() + " SOL");
+			await interaction.reply({ embeds: [embed] });
+		} catch (error) {
+			console.log(error);
+			await showError("Something went wrong", interaction);
+		}
+	}
+
+	@Slash("wallet", { description: "get NFTs by Wallet address" })
 	@SlashGroup("solana")
 	async wallet(
 		@SlashOption("address", {
@@ -107,13 +135,13 @@ export abstract class Group {
 						console.log(error);
 						data = {
 							name: "Error Loading",
-							description: "please try  next one",
+							description: "please try next one",
 							image: default_image,
 						};
 					}
 					console.log(data);
 					return new MessageEmbed()
-						.setTitle(`**NFT's for wallet : ${address}  **`)
+						.setTitle(`NFT's for wallet : ${address}`)
 						.addField("Name", data.name || "N/A")
 						.addField("Description", data.description || "N/A")
 						.setImage(data.image || default_image)
@@ -145,17 +173,17 @@ export abstract class Group {
 		}
 	}
 
-	@Slash("get_collections", { description: "Get collections" })
+	@Slash("get_collections", { description: "Get details of Magic Eden Launchpad Collections" })
 	@SlashGroup("solana")
 	async collections(
 		@SlashOption("limit", { description: "Limit", required: false,
-				       //minValue: 0,maxValue:500
-				      })
+		// minValue: 0, maxValue:500
+	 })
 		limit: number,
 		@SlashOption("offset", {
 			description: "offset",
 			required: false,
-
+		//	minValue: 0,	maxValue:500
 		})
 		offset: number ,
 		interaction: CommandInteraction
@@ -182,7 +210,7 @@ export abstract class Group {
 								: `${offset - 1}-${offset + cols.length}`
 						}`,
 					})
-					.setTitle("**Launchpad / Collection**")
+					.setTitle("**Launchpad Collections**")
 					.addField("Name", col.name)
 					.addField("Symbol", col.symbol)
 					.addField("Description", col.description.substring(0, 1000))
