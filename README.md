@@ -36,6 +36,9 @@
 
     ```bash
     BOT_TOKEN = <bot-token>
+    API_KEY_ID = <theblockchainapi-key-id>
+    API_KEY_SECRET = <theblockchainapi-key-secret>
+    MAGIC_DEN_KEY = <magic-den-key>
     ```
 
 4. Run the bot
@@ -48,7 +51,12 @@
 ### How to host the bot
 
 1. Host On Repl.it
+
 [![Use on Repl.it](https://repl.it/badge/github/YogPanjarale/solana-bot)](https://repl.it/github/YogPanjarale/solana-bot)
 
 2. Host On Glitch
 [Click Here to Host On Glitch](https://glitch.com/edit/#!/import/git?url=https://github.com/YogPanjarale/solana-bot/)
+
+3. Host on [Railway.app](https://railway.app)
+
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new/template/4BdAu9?referralCode=Tf0yEr)
