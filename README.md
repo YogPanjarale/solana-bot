@@ -1,6 +1,8 @@
 # Solana Bot
 
 ## How to deploy
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new/template/4BdAu9?referralCode=Tf0yEr)
+[![Use on Repl.it](https://repl.it/badge/github/YogPanjarale/solana-bot)](https://repl.it/github/YogPanjarale/solana-bot)
 
 ### Get Bot Token
 
