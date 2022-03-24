@@ -4,15 +4,14 @@ import {
 	PaginationType,
 } from "@discordx/pagination";
 import { CommandInteraction, MessageEmbed } from "discord.js";
-import { Discord, Slash, SlashChoice, SlashGroup, SlashOption } from "discordx";
-import { CollectionResponse, ConversionResponse, Data, Error } from "../types";
+import { Discord, Slash, SlashChoice, SlashOption } from "discordx";
+import { CollectionResponse, ConversionResponse, Error } from "../types";
 
 import { MagicDen } from "../services/MagicDen.js";
-import { default_image, mintColor, sidebarColor, name } from "../config.js";
+import { default_image, mintColor, sidebarColor } from "../config.js";
 import { TheBlockChainApi } from "../services/theblockchainapi.js";
 import { OffChainData } from "../types/Root";
 import { formatAddress } from "../utils/format_address.js";
-import { Currency } from "@metaplex/js";
 import { convert } from "../services/Currencies.js";
 
 const CurrencyChoices = {
