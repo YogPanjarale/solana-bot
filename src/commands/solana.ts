@@ -250,7 +250,7 @@ export abstract class Group {
 			showError("Error Occured", interaction);
 		}
 	}
-	@Slash("convert", { description: "convert currencies" })
+	@Slash("converter", { description: "convert currencies" })
 	async convert(
 		@SlashChoice("C to Solana","c2s")
 		@SlashChoice("Solana to C","s2c")
