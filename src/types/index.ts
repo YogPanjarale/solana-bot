@@ -31,9 +31,19 @@ type CollectionStat = {
 	volumeAll: number;
 	avgPrice24hr:number;
 }
+type CollectionList ={
+	pdaAddress: string;
+	auctionHouse: string;
+	tokenAddress: string;
+	tokenMint: string;
+	seller: string;
+	tokenSize: number;
+	price: number;
+}
 export {
     CollectionResponse,
 	CollectionStat,
+	CollectionList,
     TokensResponse,
 	ConversionResponse,
     Data,

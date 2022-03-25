@@ -5,7 +5,7 @@ import {
 } from "@discordx/pagination";
 import { CommandInteraction, MessageEmbed } from "discord.js";
 import { Discord, Slash, SlashChoice, SlashOption } from "discordx";
-import { CollectionResponse, ConversionResponse, Error } from "../types";
+import { CollectionResponse, ConversionResponse, Error, CollectionList  } from "../types";
 import { MagicDen } from "../services/MagicDen.js";
 import { default_image, mintColor, sidebarColor, blueColor } from "../config.js";
 import { TheBlockChainApi } from "../services/theblockchainapi.js";
@@ -207,7 +207,7 @@ export abstract class Group {
 
 				time: 5 * 60 * 1000,
 				type:
-					bdata.length > 20
+					bdata.length > 10
 						? PaginationType.SelectMenu
 						: PaginationType.Button,
 			});
@@ -271,7 +271,7 @@ export abstract class Group {
 			});
 			const pagination = new Pagination(interaction, pages, {
 				type:
-					limit > 20
+					limit > 10
 						? PaginationType.SelectMenu
 						: PaginationType.Button,
 				showStartEnd: true,
@@ -283,6 +283,75 @@ export abstract class Group {
 			showError("Error Occured", interaction);
 		}
 	}
+
+	@Slash("get_collection_listings", {
+		description: "Get listing details of a Collection on Magic Eden marketplace",
+	})
+	async collectionLising(
+		@SlashOption("symbol", {
+			description: "Collection Symbol",
+			required: true,
+			// minValue: 0, maxValue:500
+		})
+		symbol: string,
+		@SlashOption("limit", {
+			description: "Limit",
+			required: false,
+			// minValue: 0, maxValue:500
+		})
+		limit: number,
+		@SlashOption("offset", {
+			description: "offset",
+			required: false,
+			//	minValue: 0,	maxValue:500
+		})
+		offset: number,
+		interaction: CommandInteraction
+	): Promise<void> {
+		offset = offset || 0;
+		limit = limit || 20;
+		await interaction.deferReply();
+		const result = await Api.getCollectionList(offset, limit, symbol);
+		if (result.length == 0) {
+			const errorEmbed = ErrorEmbed("No Listings found");
+			await interaction.editReply({ embeds: [errorEmbed] });
+			return;
+		}
+
+		if (await checkError(result as Error, interaction)) return;
+		const cols = result as CollectionList[];
+		console.log(cols);
+		try {
+			const pages = cols.map((col, i) => {
+				return new MessageEmbed()
+					.setFooter({
+						text: `Listing ${i + 1} of ${
+							offset == 0
+								? cols.length
+								: `${offset - 1}-${offset + cols.length}`
+						}`,
+					})
+					.setTitle(`**Listings of ${symbol}**`)
+					.addField("Mint Address", col.tokenMint)
+					.addField("Seller", col.seller)
+					.addField("Price", col.price.toString() + " SOL")
+					.setColor(blueColor);
+			});
+			const pagination = new Pagination(interaction, pages, {
+				type:
+					limit > 10
+						? PaginationType.SelectMenu
+						: PaginationType.Button,
+				showStartEnd: true,
+				time: 5 * 60 * 1000,
+			});
+			await pagination.send();
+		} catch (error) {
+			console.log(error);
+			showError("Error Occured", interaction);
+		}
+	}
+
 	@Slash("converter", { description: "convert currencies" })
 	async convert(
 		@SlashChoice("Currency to Solana","c2s")

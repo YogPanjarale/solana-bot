@@ -1,5 +1,5 @@
 import fetch from "node-fetch";
-import { CollectionResponse, TokenListing, TokensResponse, CollectionStat } from "../types";
+import { CollectionResponse, CollectionList, TokenListing, TokensResponse, CollectionStat } from "../types";
 
 export class MagicDen {
 	authkey?: string;
@@ -54,4 +54,15 @@ export class MagicDen {
 		const json = await response.json();
 		return json as CollectionResponse[];
 	}
+	async getCollectionList(
+		offset: number = 0,
+		limit: number = 20,
+		symbol: string
+	): Promise<CollectionList[]> {
+		const url = `https://api-mainnet.magiceden.dev/v2/collections/${symbol}/listings?offset=${offset}&limit=${limit}`;
+		const response = await this.fetch(url);
+		const json = await response.json();
+		return json as CollectionList[];
+	}
 }
+
