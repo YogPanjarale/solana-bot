@@ -6,21 +6,20 @@ import {
 import { CommandInteraction, MessageEmbed } from "discord.js";
 import { Discord, Slash, SlashChoice, SlashOption } from "discordx";
 import { CollectionResponse, ConversionResponse, Error } from "../types";
-
 import { MagicDen } from "../services/MagicDen.js";
-import { default_image, mintColor, sidebarColor } from "../config.js";
+import { default_image, mintColor, sidebarColor, blueColor } from "../config.js";
 import { TheBlockChainApi } from "../services/theblockchainapi.js";
 import { OffChainData } from "../types/Root";
-import { formatAddress } from "../utils/format_address.js";
+import { formatAddress, formatFloor } from "../utils/format_address.js";
 import { convert } from "../services/Currencies.js";
 
 const CurrencyChoices = {
-	"USD (US Dollar)":"usd",
-	"EUR (euro)":"eur",
-	"JPY (Japanese Yen)":"jpy",
-	"INR (India Rupee)" :"inr",
-	 "KRW (South Korean Won)":"krw",
-	 "RUB (Russian Ruble)":"rub",
+	"USD (US Dollar)":"USD",
+	"EUR (euro)":"EUR",
+	"JPY (Japanese Yen)":"JPY",
+	"INR (India Rupee)" :"INR",
+	 "KRW (South Korean Won)":"KRW",
+	 "RUB (Russian Ruble)":"RUB",
 }
 
 const Api = new MagicDen();
@@ -111,6 +110,40 @@ export abstract class Group {
 		} catch (error) {
 			console.log(error);
 			await showError("Something went wrong", interaction);
+		}
+	}
+
+	@Slash("floor", {
+		description: "get Floor Price of any Collection by providing its symbol",
+	})
+	async floor(
+		@SlashOption("symbol", { description: "symbol of the collection you want to check" })
+		symbol: string,
+		interaction: CommandInteraction
+	): Promise<void> {
+		try {
+			const result = await Api.getCollectionStats(symbol);
+
+			if (await checkError(result as Error, interaction)) return;
+			if (result.length == 0) {
+				await showError(
+					"Symbol must be written wrong!",
+					interaction
+				);
+				return;
+			}
+			const { floorPrice, listedCount, volumeAll, avgPrice24hr } = result[0];
+			const embed = new MessageEmbed({
+				title: `Floor Price of ${symbol}`,
+			}).setColor(blueColor);
+			embed.addField("Floor Price", floorPrice.toString() + " SOL");
+			embed.addField("Total Listings", listedCount.toString());
+			embed.addField("24hr Average Price", avgPrice24hr.toString() + " SOL");
+			embed.addField("Total Volume Traded", volumeAll.toString() + " SOL");
+			await interaction.reply({ embeds: [embed] });
+		} catch (error) {
+			console.log(error);
+			await showError("No listings available for this collection.", interaction);
 		}
 	}
 
@@ -252,8 +285,8 @@ export abstract class Group {
 	}
 	@Slash("converter", { description: "convert currencies" })
 	async convert(
-		@SlashChoice("C to Solana","c2s")
-		@SlashChoice("Solana to C","s2c")
+		@SlashChoice("Currency to Solana","c2s")
+		@SlashChoice("Solana to Currency","s2c")
 		@SlashOption("method", { description: "method", required: true })
 		action: string,
 		@SlashOption("amount", { description: "amount", required: true })
@@ -285,11 +318,11 @@ export abstract class Group {
 				.addField(`${from}`, data.initalAmount.toString(), true)
 				.addField(`${to}`, data.convertedAmount.toString(), true)
 				.setFooter({
-					text: `1 SOL = ${
+					text: `1 SOL ≈ ${
 						data.rate
 					} ${currency.toUpperCase().substring(0,3)}`,
 				})
-				.setColor(sidebarColor);
+				.setColor(blueColor);
 			await interaction.editReply({ embeds: [embed] });
 		} catch (error) {
 			console.log(error);
