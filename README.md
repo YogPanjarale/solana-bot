@@ -18,34 +18,34 @@
 
 ### 5. Run Locally
 
-i) Clone the repository
+ • Clone the repository
 
-    ```bash
+    ```
     git clone https://github.com/Vampo7152/degen.git
     ```
 
-ii) install the packages
+ • install the packages
 
-    ```bash
+    ```
     npm install
 
     yarn (optional)
     ```
   
-iii) Add Enviromenent Variables
+ • Add Enviromenent Variables
     make a .env file in the root directory
     and add the following lines
 
-    ```bash
+    ```
     BOT_TOKEN = <bot-token>
     API_KEY_ID = <theblockchainapi-key-id>
     API_KEY_SECRET = <theblockchainapi-key-secret>
     MAGIC_DEN_KEY = <magic-den-key>
     ```
 
-iv) Run the bot
+ • Run the bot
 
-    ```bash
+    ```
     npm run build
     npm run serve
     ```
