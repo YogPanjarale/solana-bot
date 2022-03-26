@@ -32,11 +32,11 @@ export class MagicDen {
 		const json = await response.json();
 		return json as TokenListing[];
 	}
-	async getCollectionStats(symbol: string): Promise<CollectionStat[]> {
+	async getCollectionStats(symbol: string): Promise<CollectionStat> {
 		const url = `https://api-mainnet.magiceden.dev/v2/collections/${symbol}/stats`;
 		const response = await this.fetch(url)
 		const json = await response.json();
-		return json as CollectionStat[];
+		return json as CollectionStat;
 	}
 	async getTokenbyWallet(wallet_address: string): Promise<TokensResponse[]> {
 		const url = `https://api-mainnet.magiceden.dev/v2/wallets/${wallet_address}/tokens?offset=0&limit=100&listedOnly=true`;

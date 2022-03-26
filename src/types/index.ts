@@ -26,10 +26,10 @@ type ConversionResponse = {
 }
 type CollectionStat = {
 	symbol: string
-	floorPrice: number;
-	listedCount: number;
-	volumeAll: number;
-	avgPrice24hr:number;
+	floorPrice?: number;
+	listedCount?: number;
+	volumeAll?: number;
+	avgPrice24hr?:number;
 }
 type CollectionList ={
 	pdaAddress: string;

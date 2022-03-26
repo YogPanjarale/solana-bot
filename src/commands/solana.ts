@@ -3,8 +3,8 @@ import {
 	PaginationResolver,
 	PaginationType,
 } from "@discordx/pagination";
-import { CommandInteraction, MessageEmbed } from "discord.js";
-import { Discord, Slash, SlashChoice, SlashOption } from "discordx";
+import { CommandInteraction, MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
+import { ButtonComponent, Discord, Slash, SlashChoice, SlashOption } from "discordx";
 import { CollectionResponse, ConversionResponse, Error, CollectionList  } from "../types";
 import { MagicDen } from "../services/MagicDen.js";
 import { default_image, mintColor, sidebarColor, blueColor } from "../config.js";
@@ -125,22 +125,26 @@ export abstract class Group {
 			const result = await Api.getCollectionStats(symbol);
 
 			if (await checkError(result as Error, interaction)) return;
-			if (result.length == 0) {
+			if (!result.listedCount || !result.floorPrice ||!result.avgPrice24hr || !result.volumeAll) {
 				await showError(
 					"Symbol must be written wrong!",
 					interaction
 				);
 				return;
 			}
-			const { floorPrice, listedCount, volumeAll, avgPrice24hr } = result[0];
+			const { floorPrice, listedCount, volumeAll, avgPrice24hr } = result;
 			const embed = new MessageEmbed({
 				title: `Floor Price of ${symbol}`,
-			}).setColor(blueColor);
-			embed.addField("Floor Price", floorPrice.toString() + " SOL");
-			embed.addField("Total Listings", listedCount.toString());
-			embed.addField("24hr Average Price", avgPrice24hr.toString() + " SOL");
-			embed.addField("Total Volume Traded", volumeAll.toString() + " SOL");
-			await interaction.reply({ embeds: [embed] });
+			}).setColor(blueColor)
+			.addField("Floor Price", floorPrice.toString() + " SOL")
+			.addField("Total Listings", listedCount.toString())
+			.addField("24hr Average Price", avgPrice24hr.toString() + " SOL")
+			.addField("Total Volume Traded", volumeAll.toString() + " SOL")
+			
+			const button = new MessageButton({label:"Buy on Magic Eden",url:`https://magiceden.io/marketplace/${symbol}`,style:"LINK"});
+
+			const messageRow = new MessageActionRow().addComponents(button);
+			await interaction.reply({ embeds: [embed],components: [messageRow] });
 		} catch (error) {
 			console.log(error);
 			await showError("No listings available for this collection.", interaction);
