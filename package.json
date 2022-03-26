@@ -17,9 +17,11 @@
     "discord.js": "^13.6.0",
     "discordx": "^9.4.1",
     "dotenv": "^16.0.0",
+    "express": "^4.17.3",
     "reflect-metadata": "^0.1.13"
   },
   "devDependencies": {
+    "@types/express": "^4.17.13",
     "@types/node": "^17.0.21",
     "nodemon": "^2.0.15",
     "prettier": "^2.5.1",
