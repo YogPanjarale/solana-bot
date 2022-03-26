@@ -312,19 +312,16 @@ export abstract class Group {
 		@SlashOption("symbol", {
 			description: "Collection Symbol",
 			required: true,
-			// minValue: 0, maxValue:500
 		})
 		symbol: string,
 		@SlashOption("limit", {
 			description: "Limit",
 			required: false,
-			// minValue: 0, maxValue:500
 		})
 		limit: number,
 		@SlashOption("offset", {
 			description: "offset",
 			required: false,
-			//	minValue: 0,	maxValue:500
 		})
 		offset: number,
 		interaction: CommandInteraction
@@ -358,7 +355,30 @@ export abstract class Group {
 					.addField("Price", col.price.toString() + " SOL")
 					.setColor(blueColor);
 			});
-			const pagination = new Pagination(interaction, pages, {
+			const resolver = new PaginationResolver(
+				async(page:number,pagination:Pagination)=>{
+					const col = cols[page];
+					const token = await Api.getTokens(col.tokenMint);
+					return new MessageEmbed()
+					.setFooter({
+						text: `Listing ${page} of ${
+							offset == 0
+								? cols.length
+								: `${offset - 1}-${offset + cols.length}`
+						}`,
+					})
+					.setTitle(`**Listings of ${symbol}**`)
+					.addField("Mint Address", col.tokenMint)
+					.addField("Seller", col.seller)
+					.addField("Price", col.price.toString() + " SOL")
+					.addField(`${token.name} `, `[Buy on Magic Eden](https://magiceden.io/item-details/${col.tokenMint})`)
+					.setImage(token.image||default_image)
+					.setColor(blueColor)
+					
+				}	
+		,cols.length
+			)
+			const pagination = new Pagination(interaction, resolver, {
 				type:
 					limit > 10
 						? PaginationType.SelectMenu
@@ -420,7 +440,7 @@ export abstract class Group {
 		}
 	}
 }
-0
+
 function GetActionRow(label:string,link: string) {
 	const button = new MessageButton({ label: label, url: link, style: "LINK" });
 
