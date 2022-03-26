@@ -61,6 +61,7 @@ export abstract class Group {
 		address: string,
 		interaction: CommandInteraction
 	): Promise<void> {
+		await interaction.deferReply();
 		try {
 			const result = await Api.getTokens(address);
 
@@ -71,11 +72,11 @@ export abstract class Group {
 				title: name,
 				image: { url: image },
 				// description: "0",
-			}).setColor(mintColor);
-			embed.setURL(externalUrl);
-			embed.addField("Collection", collection);
-			embed.addField("Owner", owner);
-			await interaction.reply({ embeds: [embed] });
+			}).setColor(mintColor)
+			embed.setURL(externalUrl)
+			embed.addField("Collection", collection)
+			embed.addField("Owner", owner)
+			await interaction.editReply({ embeds: [embed] });
 		} catch (error) {
 			await showError("Something went wrong", interaction);
 		}
@@ -91,22 +92,40 @@ export abstract class Group {
 	): Promise<void> {
 		try {
 			const result = await Api.getTokenListing(address);
-
+			
 			if (await checkError(result as Error, interaction)) return;
+			let listed = false
 			if (result.length == 0) {
 				await showError(
 					"No Listing available for this token",
 					interaction
 				);
 				return;
+			}else{
+				listed = true
 			}
+			const tokenDetails = await Api.getTokens(address);
+			const { name, collection, image, externalUrl, owner } = tokenDetails;
 			const { seller, price } = result[0];
 			const embed = new MessageEmbed({
-				title: `Listings for ${formatAddress(address)}`,
-			}).setColor(mintColor);
-			embed.addField("Seller", seller);
-			embed.addField("Price", price.toString() + " SOL");
-			await interaction.reply({ embeds: [embed] });
+				title: listed?`Listings for ${formatAddress(address)}`:name,
+			}).setColor(mintColor)
+			.setImage(image||default_image)
+			.setFooter({text:`${name} | ${collection} | ${owner}`})
+			.setColor(mintColor)
+			.setURL(externalUrl)
+			.addFields([
+				{name:"Collection",value:collection},
+				{name:"Owner",value:owner},
+			])
+			if (listed){
+				embed.addFields([
+					{name:"Price",value:`${price} SOL`},
+					{name:"Seller",value:seller},
+				])
+			}
+			const actionRow = GetActionRow("Buy on Magic Eden",`https://magiceden.io/item-details/${address}`)
+			await interaction.reply({ embeds: [embed] ,components:[actionRow]});
 		} catch (error) {
 			console.log(error);
 			await showError("Something went wrong", interaction);
