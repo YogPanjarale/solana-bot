@@ -141,9 +141,7 @@ export abstract class Group {
 			.addField("24hr Average Price", avgPrice24hr.toString() + " SOL")
 			.addField("Total Volume Traded", volumeAll.toString() + " SOL")
 			
-			const button = new MessageButton({label:"Buy on Magic Eden",url:`https://magiceden.io/marketplace/${symbol}`,style:"LINK"});
-
-			const messageRow = new MessageActionRow().addComponents(button);
+			const messageRow = GetActionRow("Buy on Magic Eden",`https://magiceden.io/marketplace/${symbol}`);
 			await interaction.reply({ embeds: [embed],components: [messageRow] });
 		} catch (error) {
 			console.log(error);
@@ -404,3 +402,10 @@ export abstract class Group {
 	}
 }
 0
+function GetActionRow(label:string,link: string) {
+	const button = new MessageButton({ label: label, url: link, style: "LINK" });
+
+	const messageRow = new MessageActionRow().addComponents(button);
+	return messageRow;
+}
+
