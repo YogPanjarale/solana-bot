@@ -16,42 +16,42 @@
 
 4. Add the Bot in your own Server using the created url
 
-### Run Locally
+## Run Locally
 
  • Clone the repository
 
-    ```
-    git clone https://github.com/Vampo7152/degen.git
-    ```
+```sh
+    git clone https://github.com/YogPanjarale/solana-bot.git
+```
 
  • install the packages
 
-    ```
+```sh
     npm install
 
     yarn (optional)
-    ```
+```
   
  • Add Enviromenent Variables
     make a .env file in the root directory
     and add the following lines
 
-    ```
+```sh
     BOT_TOKEN = <bot-token>
     API_KEY_ID = <theblockchainapi-key-id>
     API_KEY_SECRET = <theblockchainapi-key-secret>
     MAGIC_DEN_KEY = <magic-den-key>
-    ```
+```
 
  • Run the bot
 
-    ```
+```sh
     npm run build
     npm run serve
-    ```
+```
 
-### Host the bot for 24/7 uptime
+## Host the bot for 24/7 uptime
 
-New to Hosting Services? Check out [Railway.app](https://railway.app?referralCode=vamp)
+New to Hosting Services? Check out [Railway.app](https://railway.app?referralCode=yog)
 
 [![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new/template/4BdAu9?referralCode=Tf0yEr)
