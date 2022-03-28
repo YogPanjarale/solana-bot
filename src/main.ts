@@ -4,6 +4,28 @@ import "reflect-metadata";
 import { Intents, Interaction, Message } from "discord.js";
 import { Client } from "discordx";
 import { dirname, importx } from "@discordx/importer";
+import express from 'express';
+
+const app = express();
+app.use(express.json());
+const start = new Date();
+app.get("/",(_req,res)=>{
+  return res.json("Hello World!");
+})
+app.get("/staus",(_req,res)=>{
+  return res.json("Ok");
+})
+//uptime
+app.get("/uptime",(_req,res)=>{
+  const uptime = new Date().getTime() - start.getTime();
+  const utime = {
+    days: Math.floor(uptime / (1000 * 60 * 60 * 24)),
+    hours: Math.floor((uptime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+    minutes: Math.floor((uptime % (1000 * 60 * 60)) / (1000 * 60)),
+    seconds: Math.floor((uptime % (1000 * 60)) / 1000)
+  }
+  return res.json(utime);
+})
 
 export const client = new Client({
   simpleCommand: {
@@ -64,3 +86,6 @@ async function run() {
 }
 
 run();
+app.listen(process.env.PORT||3000,()=>{
+  console.log("Server started! on port ",process.env.PORT||3000);
+});

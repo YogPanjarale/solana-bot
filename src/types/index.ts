@@ -24,8 +24,26 @@ type ConversionResponse = {
 	initalAmount: number;
 	rate:number
 }
+type CollectionStat = {
+	symbol: string
+	floorPrice?: number;
+	listedCount?: number;
+	volumeAll?: number;
+	avgPrice24hr?:number;
+}
+type CollectionList ={
+	pdaAddress: string;
+	auctionHouse: string;
+	tokenAddress: string;
+	tokenMint: string;
+	seller: string;
+	tokenSize: number;
+	price: number;
+}
 export {
     CollectionResponse,
+	CollectionStat,
+	CollectionList,
     TokensResponse,
 	ConversionResponse,
     Data,

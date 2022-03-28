@@ -1,16 +1,12 @@
 # Solana Bot
 
-## How to deploy
-[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new/template/4BdAu9?referralCode=Tf0yEr)
-[![Use on Repl.it](https://repl.it/badge/github/YogPanjarale/solana-bot)](https://repl.it/github/YogPanjarale/solana-bot)
+## Deployment Instructions-
 
-### Get Bot Token
+1. Create a bot on discord dev portal [learn basics here](<https://dev.to/vishnudileesh/building-a-discord-bot-basic-setups-4a53>)
 
-1. create a bot on discord dev portal [learn basics here](<https://dev.to/vishnudileesh/building-a-discord-bot-basic-setups-4a53>)
+2. Copy the Bot Token and go to OAuth field for URL generation
 
-2. Now you have the bot token, you can use it to deploy the bot.
-
-3. For the permissions& scope of the bot check this insted of what is show in above article
+3. For the permissions & scope of the bot check this insted of what is show in above article.
 
     Scopes
     ![image](https://user-images.githubusercontent.com/64301340/159311861-265af1db-0bec-418f-b0eb-7605f945217f.png)
@@ -18,47 +14,44 @@
     Permissions
     ![image](https://user-images.githubusercontent.com/64301340/159312215-960e614c-8821-4775-8ba9-123fc92a3b3a.png)
 
+4. Add the Bot in your own Server using the created url
+
 ### Run Locally
 
-1. Clone the repository
+ • Clone the repository
 
-    ```bash
-    git clone https://github.com/YogPanjarale/solana-bot.git
+    ```
+    git clone https://github.com/Vampo7152/degen.git
     ```
 
-2. install the packages
+ • install the packages
 
-    ```bash
+    ```
     npm install
+
+    yarn (optional)
     ```
   
-3. Add Enviromenent Variables
+ • Add Enviromenent Variables
     make a .env file in the root directory
     and add the following lines
 
-    ```bash
+    ```
     BOT_TOKEN = <bot-token>
     API_KEY_ID = <theblockchainapi-key-id>
     API_KEY_SECRET = <theblockchainapi-key-secret>
     MAGIC_DEN_KEY = <magic-den-key>
     ```
 
-4. Run the bot
+ • Run the bot
 
-    ```bash
+    ```
     npm run build
     npm run serve
     ```
 
-### How to host the bot
+### Host the bot for 24/7 uptime
 
-1. Host On Repl.it
-
-[![Use on Repl.it](https://repl.it/badge/github/YogPanjarale/solana-bot)](https://repl.it/github/YogPanjarale/solana-bot)
-
-2. Host On Glitch
-[Click Here to Host On Glitch](https://glitch.com/edit/#!/import/git?url=https://github.com/YogPanjarale/solana-bot/)
-
-3. Host on [Railway.app](https://railway.app)
+New to Hosting Services? Check out [Railway.app](https://railway.app?referralCode=vamp)
 
 [![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new/template/4BdAu9?referralCode=Tf0yEr)
