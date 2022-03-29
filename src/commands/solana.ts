@@ -42,6 +42,11 @@ const CurrencyChoices = {
 	"KRW (South Korean Won)": "KRW",
 	"RUB (Russian Ruble)": "RUB",
 };
+
+const netChoices = {
+	"Mainnet Beta": "mainnet-beta",
+	"Devnet": "devnet",
+}
 //key value pair
 type KeyValue = {
 	[key: string]: string;
@@ -229,6 +234,12 @@ export abstract class Group {
 			description: "wallet address or public key of owner",
 		})
 		address: string,
+		@SlashChoice(netChoices)
+		@SlashOption("network", {
+			description: "network to use",
+			required: false,
+		})
+		network: string,
 		interaction: CommandInteraction
 	) {
 		// await interaction.reply("Working on it ...");
@@ -237,12 +248,21 @@ export abstract class Group {
 			// const metadata = await Metaplex.getNFTbyWallet(address);
 			const response = await BApi.solanaGetNFTsBelongingToWallet({
 				wallet: address,
-				network: "mainnet-beta",
+				network: network||"mainnet-beta",
 			});
 			console.log(response);
 			const err = response as Error;
 			const bdata = response as OffChainData[];
 			if (await checkError(err, interaction)) return;
+			if (bdata.length == 0) {
+				// no nfts found
+				await showError(
+					"No NFTs found for this wallet address",
+					interaction
+					);
+					return 
+			
+			}
 			// const links = metadata as string[];
 			//start previous next end
 			const embedX = new PaginationResolver(
