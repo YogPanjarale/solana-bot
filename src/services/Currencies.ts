@@ -17,8 +17,8 @@ export async function convert(amount:number, from:string,to:string):Promise<Conv
         return {
             from: invert?to:from,
             to: invert?from:to,
-            convertedAmount,
-            initalAmount: amount,
+            convertedAmount: Number(convertedAmount.toFixed(5)),
+            initalAmount: Number(amount.toFixed(5)),
             rate : rate
         } 
     }

@@ -42,11 +42,15 @@ const CurrencyChoices = {
 	"KRW (South Korean Won)": "KRW",
 	"RUB (Russian Ruble)": "RUB",
 };
-const coins = {
-	sol: "<:SolanaLogo:956886523645661194>",
-	usd: "<:dollar:956886523645661194>",
-	eur: "<:euro:956886523645661194>",
-	yen: "<:yen:956886523645661194>",
+//key value pair
+type KeyValue = {
+	[key: string]: string;
+};
+const coins: KeyValue = {
+	sol: "<:SolanaLogo:958306948695097355>",
+	usd: "💵",
+	eur: "💶",
+	yen: "💴",
 	coin: "🪙",
 };
 const Api = new MagicDen();
@@ -192,8 +196,7 @@ export abstract class Group {
 				return;
 			}
 			const { floorPrice, listedCount, volumeAll, avgPrice24hr } = result;
-			const fn = (n: number) =>
-				(n / 10e9).toFixed(2).toString() + " SOL";
+			const fn = (n: number) => (n / 10e8).toFixed(2).toString() + " SOL";
 			const embed = new MessageEmbed({
 				title: `Floor Price of ${symbol}`,
 			})
@@ -466,11 +469,15 @@ export abstract class Group {
 		let from: string, to: string;
 		if (action == "c2s") {
 			from = currency;
-			to = "solana";
+			to = "Solana";
 		} else {
-			from = "solana";
+			from = "Solana";
 			to = currency;
 		}
+		const code = currency.substring(0, 3);
+		const c = code.toLowerCase();
+		const emoji = coins[c] ? coins[c] : coins["coin"];
+		console.log(c);
 		try {
 			const result = await convert(
 				amount,
@@ -478,15 +485,22 @@ export abstract class Group {
 				to.toLowerCase()
 			);
 			data = result;
+			let title = "";
+			if (action == "s2c") {
+				title = `**${amount} ${from} ${coins.sol} to ${to} ${emoji}**`;
+			} else {
+				title = `**${amount} ${from} ${emoji} to ${to} ${coins.sol}**`;
+			}
 			const embed = new MessageEmbed()
-				.setTitle(`**${amount} ${from} to ${to}**`)
+				.setTitle(title)
 				.addField(`${from}`, data.initalAmount.toString(), true)
 				.addField(`${to}`, data.convertedAmount.toString(), true)
-				.setFooter({
-					text: `1 SOL ≈ ${data.rate} ${currency
-						.toUpperCase()
-						.substring(0, 3)}`,
-				})
+				.addField(
+					"Conversion Rate",
+					`1 SOL ≈ ${
+						data.rate
+					} ${code.toUpperCase()}`
+				)
 				.setColor(blueColor);
 			await interaction.editReply({ embeds: [embed] });
 		} catch (error) {
