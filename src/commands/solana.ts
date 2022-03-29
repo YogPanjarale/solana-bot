@@ -3,25 +3,52 @@ import {
 	PaginationResolver,
 	PaginationType,
 } from "@discordx/pagination";
-import { CommandInteraction, MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
-import { ButtonComponent, Discord, Slash, SlashChoice, SlashOption } from "discordx";
-import { CollectionResponse, ConversionResponse, Error, CollectionList  } from "../types";
+import {
+	CommandInteraction,
+	MessageActionRow,
+	MessageButton,
+	MessageEmbed,
+} from "discord.js";
+import {
+	ButtonComponent,
+	Discord,
+	Slash,
+	SlashChoice,
+	SlashOption,
+} from "discordx";
+import {
+	CollectionResponse,
+	ConversionResponse,
+	Error,
+	CollectionList,
+} from "../types";
 import { MagicDen } from "../services/MagicDen.js";
-import { default_image, mintColor, sidebarColor, blueColor } from "../config.js";
+import {
+	default_image,
+	mintColor,
+	sidebarColor,
+	blueColor,
+} from "../config.js";
 import { TheBlockChainApi } from "../services/theblockchainapi.js";
 import { OffChainData } from "../types/Root";
 import { formatAddress, formatFloor } from "../utils/format_address.js";
 import { convert } from "../services/Currencies.js";
 
 const CurrencyChoices = {
-	"USD (US Dollar)":"USD",
-	"EUR (euro)":"EUR",
-	"JPY (Japanese Yen)":"JPY",
-	"INR (India Rupee)" :"INR",
-	 "KRW (South Korean Won)":"KRW",
-	 "RUB (Russian Ruble)":"RUB",
-}
-
+	"USD (US Dollar)": "USD",
+	"EUR (euro)": "EUR",
+	"JPY (Japanese Yen)": "JPY",
+	"INR (India Rupee)": "INR",
+	"KRW (South Korean Won)": "KRW",
+	"RUB (Russian Ruble)": "RUB",
+};
+const coins = {
+	sol: "<:SolanaLogo:956886523645661194>",
+	usd: "<:dollar:956886523645661194>",
+	eur: "<:euro:956886523645661194>",
+	yen: "<:yen:956886523645661194>",
+	coin: "🪙",
+};
 const Api = new MagicDen();
 const BApi = new TheBlockChainApi(
 	process.env.API_KEY_ID || "",
@@ -72,10 +99,10 @@ export abstract class Group {
 				title: name,
 				image: { url: image },
 				// description: "0",
-			}).setColor(mintColor)
-			embed.setURL(externalUrl)
-			embed.addField("Collection", collection)
-			embed.addField("Owner", owner)
+			}).setColor(mintColor);
+			embed.setURL(externalUrl);
+			embed.addField("Collection", collection);
+			embed.addField("Owner", owner);
 			await interaction.editReply({ embeds: [embed] });
 		} catch (error) {
 			await showError("Something went wrong", interaction);
@@ -92,40 +119,48 @@ export abstract class Group {
 	): Promise<void> {
 		try {
 			const result = await Api.getTokenListing(address);
-			
+
 			if (await checkError(result as Error, interaction)) return;
-			let listed = false
+			let listed = false;
 			if (result.length == 0) {
 				await showError(
 					"No Listing available for this token",
 					interaction
 				);
 				return;
-			}else{
-				listed = true
+			} else {
+				listed = true;
 			}
 			const tokenDetails = await Api.getTokens(address);
-			const { name, collection, image, externalUrl, owner } = tokenDetails;
+			const { name, collection, image, externalUrl, owner } =
+				tokenDetails;
 			const { seller, price } = result[0];
 			const embed = new MessageEmbed({
-				title: listed?`Listings for ${formatAddress(address)}`:name,
-			}).setColor(mintColor)
-			.setImage(image||default_image)
-			.setFooter({text:`${name} | ${collection} | ${owner}`})
-			.setColor(mintColor)
-			.setURL(externalUrl)
-			.addFields([
-				{name:"Collection",value:collection},
-				{name:"Owner",value:owner},
-			])
-			if (listed){
+				title: listed ? `Listings for ${formatAddress(address)}` : name,
+			})
+				.setColor(mintColor)
+				.setImage(image || default_image)
+				.setFooter({ text: `${name} | ${collection} | ${owner}` })
+				.setColor(mintColor)
+				.setURL(externalUrl)
+				.addFields([
+					{ name: "Collection", value: collection },
+					{ name: "Owner", value: owner },
+				]);
+			if (listed) {
 				embed.addFields([
-					{name:"Price",value:`${price} SOL`},
-					{name:"Seller",value:seller},
-				])
+					{ name: "Price", value: `${price} SOL` },
+					{ name: "Seller", value: seller },
+				]);
 			}
-			const actionRow = GetActionRow("Buy on Magic Eden",`https://magiceden.io/item-details/${address}`)
-			await interaction.reply({ embeds: [embed] ,components:[actionRow]});
+			const actionRow = GetActionRow(
+				"Buy on Magic Eden",
+				`https://magiceden.io/item-details/${address}`
+			);
+			await interaction.reply({
+				embeds: [embed],
+				components: [actionRow],
+			});
 		} catch (error) {
 			console.log(error);
 			await showError("Something went wrong", interaction);
@@ -133,10 +168,13 @@ export abstract class Group {
 	}
 
 	@Slash("floor", {
-		description: "get Floor Price of any Collection by providing its symbol",
+		description:
+			"get Floor Price of any Collection by providing its symbol",
 	})
 	async floor(
-		@SlashOption("symbol", { description: "symbol of the collection you want to check" })
+		@SlashOption("symbol", {
+			description: "symbol of the collection you want to check",
+		})
 		symbol: string,
 		interaction: CommandInteraction
 	): Promise<void> {
@@ -144,27 +182,41 @@ export abstract class Group {
 			const result = await Api.getCollectionStats(symbol);
 
 			if (await checkError(result as Error, interaction)) return;
-			if (!result.listedCount || !result.floorPrice ||!result.avgPrice24hr || !result.volumeAll) {
-				await showError(
-					"Symbol must be written wrong!",
-					interaction
-				);
+			if (
+				!result.listedCount ||
+				!result.floorPrice ||
+				!result.avgPrice24hr ||
+				!result.volumeAll
+			) {
+				await showError("Symbol must be written wrong!", interaction);
 				return;
 			}
 			const { floorPrice, listedCount, volumeAll, avgPrice24hr } = result;
+			const fn = (n: number) =>
+				(n / 10e9).toFixed(2).toString() + " SOL";
 			const embed = new MessageEmbed({
 				title: `Floor Price of ${symbol}`,
-			}).setColor(blueColor)
-			.addField("Floor Price", floorPrice.toString() + " SOL")
-			.addField("Total Listings", listedCount.toString())
-			.addField("24hr Average Price", avgPrice24hr.toString() + " SOL")
-			.addField("Total Volume Traded", volumeAll.toString() + " SOL")
-			
-			const messageRow = GetActionRow("Buy on Magic Eden",`https://magiceden.io/marketplace/${symbol}`);
-			await interaction.reply({ embeds: [embed],components: [messageRow] });
+			})
+				.setColor(blueColor)
+				.addField("Floor Price", fn(floorPrice))
+				.addField("Total Listings", listedCount.toString())
+				.addField("24hr Average Price", fn(avgPrice24hr))
+				.addField("Total Volume Traded", fn(volumeAll));
+
+			const messageRow = GetActionRow(
+				"Buy on Magic Eden",
+				`https://magiceden.io/marketplace/${symbol}`
+			);
+			await interaction.reply({
+				embeds: [embed],
+				components: [messageRow],
+			});
 		} catch (error) {
 			console.log(error);
-			await showError("No listings available for this collection.", interaction);
+			await showError(
+				"No listings available for this collection.",
+				interaction
+			);
 		}
 	}
 
@@ -306,7 +358,8 @@ export abstract class Group {
 	}
 
 	@Slash("get_collection_listings", {
-		description: "Get listing details of a Collection on Magic Eden marketplace",
+		description:
+			"Get listing details of a Collection on Magic Eden marketplace",
 	})
 	async collectionLising(
 		@SlashOption("symbol", {
@@ -356,28 +409,30 @@ export abstract class Group {
 					.setColor(blueColor);
 			});
 			const resolver = new PaginationResolver(
-				async(page:number,pagination:Pagination)=>{
+				async (page: number, pagination: Pagination) => {
 					const col = cols[page];
 					const token = await Api.getTokens(col.tokenMint);
 					return new MessageEmbed()
-					.setFooter({
-						text: `Listing ${page} of ${
-							offset == 0
-								? cols.length
-								: `${offset - 1}-${offset + cols.length}`
-						}`,
-					})
-					.setTitle(`**Listings of ${symbol}**`)
-					.addField("Mint Address", col.tokenMint)
-					.addField("Seller", col.seller)
-					.addField("Price", col.price.toString() + " SOL")
-					.addField(`${token.name} `, `[Buy on Magic Eden](https://magiceden.io/item-details/${col.tokenMint})`)
-					.setImage(token.image||default_image)
-					.setColor(blueColor)
-					
-				}	
-		,cols.length
-			)
+						.setFooter({
+							text: `Listing ${page} of ${
+								offset == 0
+									? cols.length
+									: `${offset - 1}-${offset + cols.length}`
+							}`,
+						})
+						.setTitle(`**Listings of ${symbol}**`)
+						.addField("Mint Address", col.tokenMint)
+						.addField("Seller", col.seller)
+						.addField("Price", col.price.toString() + " SOL")
+						.addField(
+							`${token.name} `,
+							`[Buy on Magic Eden](https://magiceden.io/item-details/${col.tokenMint})`
+						)
+						.setImage(token.image || default_image)
+						.setColor(blueColor);
+				},
+				cols.length
+			);
 			const pagination = new Pagination(interaction, resolver, {
 				type:
 					limit > 10
@@ -395,8 +450,8 @@ export abstract class Group {
 
 	@Slash("converter", { description: "convert currencies" })
 	async convert(
-		@SlashChoice("Currency to Solana","c2s")
-		@SlashChoice("Solana to Currency","s2c")
+		@SlashChoice("Currency to Solana", "c2s")
+		@SlashChoice("Solana to Currency", "s2c")
 		@SlashOption("method", { description: "method", required: true })
 		action: string,
 		@SlashOption("amount", { description: "amount", required: true })
@@ -408,13 +463,13 @@ export abstract class Group {
 	): Promise<void> {
 		await interaction.deferReply();
 		let data: ConversionResponse;
-		let from:string,to:string;
-		if(action=="c2s"){
-			from=currency;
-			to="solana";
-		}else{
-			from="solana";
-			to=currency;
+		let from: string, to: string;
+		if (action == "c2s") {
+			from = currency;
+			to = "solana";
+		} else {
+			from = "solana";
+			to = currency;
 		}
 		try {
 			const result = await convert(
@@ -428,9 +483,9 @@ export abstract class Group {
 				.addField(`${from}`, data.initalAmount.toString(), true)
 				.addField(`${to}`, data.convertedAmount.toString(), true)
 				.setFooter({
-					text: `1 SOL ≈ ${
-						data.rate
-					} ${currency.toUpperCase().substring(0,3)}`,
+					text: `1 SOL ≈ ${data.rate} ${currency
+						.toUpperCase()
+						.substring(0, 3)}`,
 				})
 				.setColor(blueColor);
 			await interaction.editReply({ embeds: [embed] });
@@ -441,10 +496,13 @@ export abstract class Group {
 	}
 }
 
-function GetActionRow(label:string,link: string) {
-	const button = new MessageButton({ label: label, url: link, style: "LINK" });
+function GetActionRow(label: string, link: string) {
+	const button = new MessageButton({
+		label: label,
+		url: link,
+		style: "LINK",
+	});
 
 	const messageRow = new MessageActionRow().addComponents(button);
 	return messageRow;
 }
-
