@@ -40,7 +40,6 @@
     BOT_TOKEN = <bot-token>
     API_KEY_ID = <theblockchainapi-key-id>
     API_KEY_SECRET = <theblockchainapi-key-secret>
-    MAGIC_DEN_KEY = <magic-den-key>
 ```
 
  • Run the bot
